@@ -1,12 +1,5 @@
-const mysql = require("mysql2");
+const { PrismaClient } = require("@prisma/client");
 
-const connection = mysql.createPool({
-    host: "localhost",
-    user: "root",
-    password: "123456",
-    database: "db_api_2026",
-    waitForConnections: true,
-    connectionLimit: 10,
-});
+const prisma = new PrismaClient();
 
-module.exports = connection.promise();
+module.exports = prisma;

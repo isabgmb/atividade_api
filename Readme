@@ -1,0 +1,201 @@
+# 🚀 API Express + Prisma — CRUD de Usuário com Perfil
+
+API REST desenvolvida com **Node.js**, **Express** e **Prisma ORM**, com banco de dados **MySQL**.
+
+---
+
+## 📋 Requisitos
+
+| Ferramenta | Versão mínima |
+|------------|---------------|
+| Node.js    | 18.x          |
+| npm        | 9.x           |
+| MySQL      | 8.x           |
+| Prisma ORM | 5.x           |
+
+---
+
+## ⚙️ Como rodar o projeto
+
+### 1. Clone o repositório
+
+```bash
+git clone <url-do-repositorio>
+cd api_express
+```
+
+### 2. Instale as dependências
+
+```bash
+npm install
+```
+
+### 3. Configure as variáveis de ambiente
+
+Crie um arquivo `.env` na raiz do projeto:
+
+```env
+DATABASE_URL="mysql://root:SUA_SENHA@localhost:3306/db_api_2026"
+PORT=3001
+```
+
+> Altere `root` e `SUA_SENHA` conforme suas credenciais do MySQL.
+
+### 4. Execute as migrations (cria as tabelas no banco)
+
+```bash
+npx prisma migrate dev --name init
+```
+
+### 5. Gere o Prisma Client
+
+```bash
+npx prisma generate
+```
+
+### 6. Inicie o servidor
+
+```bash
+# Desenvolvimento (com hot reload)
+npm run dev
+
+# Produção
+npm start
+```
+
+O servidor estará disponível em: `http://localhost:3001`
+
+---
+
+## 🗄️ Modelo de Dados
+
+```
+Perfil
+├── id          Int  (PK, autoincrement)
+└── perfil_nome String
+
+Usuario
+├── id          Int      (PK, autoincrement)
+├── nome        String
+├── email       String   (unique)
+├── senha       String   (hash bcrypt)
+├── id_perfil   Int      (FK → Perfil, unique)
+├── created_at  DateTime
+└── updated_at  DateTime
+```
+
+**Relacionamento:** 1:1 — cada usuário possui exatamente um perfil.
+
+---
+
+## 📡 Endpoints
+
+### ➕ Criar Usuário — `POST /api/usuarios`
+
+Cria o usuário e o perfil em uma única requisição.
+
+**Body (JSON):**
+```json
+{
+  "nome": "João Silva",
+  "email": "joao@email.com",
+  "senha": "minhasenha123",
+  "perfil_nome": "Administrador"
+}
+```
+
+**Resposta 201:**
+```json
+{
+  "mensagem": "Usuário cadastrado com sucesso",
+  "usuario": {
+    "id": 1,
+    "nome": "João Silva",
+    "email": "joao@email.com",
+    "id_perfil": 1,
+    "created_at": "...",
+    "updated_at": "...",
+    "perfil": {
+      "id": 1,
+      "perfil_nome": "Administrador"
+    }
+  }
+}
+```
+
+---
+
+### 📋 Listar Usuários — `GET /api/usuarios`
+
+Retorna todos os usuários com seus perfis.
+
+**Resposta 200:**
+```json
+{
+  "mensagem": "Usuários encontrados com sucesso",
+  "total": 2,
+  "usuarios": [ ... ]
+}
+```
+
+---
+
+### 🔍 Buscar Usuário — `GET /api/usuarios/:id`
+
+**Resposta 200:**
+```json
+{
+  "mensagem": "Usuário encontrado com sucesso",
+  "usuario": { ... }
+}
+```
+
+---
+
+### ✏️ Atualizar Usuário — `PUT /api/usuarios/:id`
+
+Todos os campos são opcionais. O perfil também pode ser atualizado.
+
+**Body (JSON):**
+```json
+{
+  "nome": "João Atualizado",
+  "email": "novo@email.com",
+  "senha": "novasenha456",
+  "perfil_nome": "Editor"
+}
+```
+
+---
+
+### 🗑️ Deletar Usuário — `DELETE /api/usuarios/:id`
+
+**Resposta 200:**
+```json
+{
+  "mensagem": "Usuário removido com sucesso."
+}
+```
+
+---
+
+## 🔒 Regras de Negócio
+
+- ✅ Email único — não é possível cadastrar dois usuários com o mesmo e-mail
+- ✅ Senha armazenada com hash **bcrypt** (nunca em texto puro)
+- ✅ Ao criar um usuário, o perfil é criado junto (nested create do Prisma)
+- ✅ Ao listar/buscar, os dados do perfil são retornados junto ao usuário
+- ✅ A senha nunca é retornada nas respostas da API
+
+---
+
+## 📦 Dependências
+
+| Pacote          | Versão  | Uso                         |
+|-----------------|---------|-----------------------------|
+| express         | ^5.2.1  | Framework HTTP              |
+| @prisma/client  | ^5.22.0 | ORM — acesso ao banco       |
+| bcryptjs        | ^2.4.3  | Hash de senhas              |
+| cors            | ^2.8.6  | Liberação de origens        |
+| nodemon         | ^3.1.14 | Hot reload em desenvolvimento |
+| prisma          | ^5.22.0 | CLI do Prisma (dev)         |
